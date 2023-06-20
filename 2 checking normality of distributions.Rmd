@@ -1,0 +1,46 @@
+---
+title: "Checking normality of exposures and outcomes"
+author: "Anna Goulding"
+date: "2023-06-20"
+output: html_document
+---
+
+
+```{r read in data, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+# packages ####
+library(tidyverse)
+library(haven)
+library(janitor)
+#### read in data 
+# set data working directory ####
+data <- "//rdsfcifs.acrc.bris.ac.uk/MRC-IEU-research/projects/wt1/wp3/037/working/data/"
+
+# open datasets ####
+df_age7 <- readRDS(paste0(data, "df_age7.rds"))
+df_age9 <- readRDS(paste0(data, "df_age9.rds"))
+df_age15 <- readRDS(paste0(data, "df_age15.rds"))
+df_age18 <- readRDS(paste0(data, "df_age18.rds"))
+df_age24 <- readRDS(paste0(data, "df_age24.rds"))
+```
+
+## Age 7
+# Exposures
+
+```{r age 7 exposures}
+ggplot(df_age_7, aes(x=pm25_age7_std)) + geom_histogram()
+
+ggplot(df_age_7, aes(x=bc_age7_std)) + geom_histogram()
+
+ggplot(df_age_7, aes(x=no2_age7_std)) + geom_histogram()
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
