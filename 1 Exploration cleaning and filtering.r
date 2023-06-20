@@ -26,8 +26,7 @@ initial_dataset %>%
 initial_dataset %>% 
   tabyl(kz021)
 initial_dataset %>% 
-  tabyl(kz021)
-mean(initial_dataset$f7003c)
+  tabyl(c645a)
 
 
 # create single parental social class variable ####
