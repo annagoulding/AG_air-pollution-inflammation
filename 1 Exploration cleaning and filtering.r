@@ -16,7 +16,7 @@ rob_stand <- function(exposure){
 data <- "//rdsfcifs.acrc.bris.ac.uk/MRC-IEU-research/projects/wt1/wp3/037/working/data/"
 
 # open dataset ####
-initial_dataset <- read_dta(paste0(data, "pollution_inflammation2.dta"))
+initial_dataset <- read_dta(paste0(data, "pollution_inflammation.dta"))
 
 # explore data ####
 initial_dataset %>% 
@@ -31,8 +31,6 @@ initial_dataset %>%
 
 # create single parental social class variable ####
 df2 <- initial_dataset %>%
-  mutate(c755 = if_else(c755 == 65, NA, c755)) %>% 
-  mutate(c765 = if_else(c765 == 65, NA, c765)) %>% 
   mutate(social_class = if_else(!is.na(c755), c755, c765))
 
 df2 %>% 
