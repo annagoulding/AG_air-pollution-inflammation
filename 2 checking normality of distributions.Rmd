@@ -6,28 +6,35 @@ output: html_document
 ---
 
 
-```{r read in data, include=FALSE}
+```{r settings, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 # packages ####
 library(tidyverse)
 library(haven)
 library(janitor)
+```
+
+
+```{r read in data, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+
 #### read in data 
 # set data working directory ####
 data <- "//rdsfcifs.acrc.bris.ac.uk/MRC-IEU-research/projects/wt1/wp3/037/working/data/"
 
 # open datasets ####
-df_age7 <- readRDS(paste0(data, "df_age7.rds"))
-df_age9 <- readRDS(paste0(data, "df_age9.rds"))
-df_age15 <- readRDS(paste0(data, "df_age15.rds"))
-df_age18 <- readRDS(paste0(data, "df_age18.rds"))
-df_age24 <- readRDS(paste0(data, "df_age24.rds"))
+df_age_7 <- readRDS(paste0(data, "df_age_7.rds"))
+df_age_9 <- readRDS(paste0(data, "df_age_9.rds"))
+df_age_15 <- readRDS(paste0(data, "df_age_15.rds"))
+df_age_18 <- readRDS(paste0(data, "df_age_18.rds"))
+df_age_24 <- readRDS(paste0(data, "df_age_24.rds"))
 ```
 
-## Age 7
-# Exposures
 
-```{r age 7 exposures}
+# Age 7
+## Exposures
+
+```{r age 7 exposures, echo=FALSE}
 ggplot(df_age_7, aes(x=pm25_age7_std)) + geom_histogram()
 
 ggplot(df_age_7, aes(x=bc_age7_std)) + geom_histogram()
@@ -35,12 +42,95 @@ ggplot(df_age_7, aes(x=bc_age7_std)) + geom_histogram()
 ggplot(df_age_7, aes(x=no2_age7_std)) + geom_histogram()
 ```
 
-## Including Plots
+## Outcomes
 
-You can also embed plots, for example:
+```{r age 7 outcome, echo=FALSE}
+ggplot(df_age_7, aes(x=Gp_F7)) + geom_histogram()
+ggplot(df_age_7, aes(x=Gp_F7_log)) + geom_histogram()
 
-```{r pressure, echo=FALSE}
-plot(pressure)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+# Age 9
+## Exposures
+
+```{r age 9 exposures, echo=FALSE}
+ggplot(df_age_9, aes(x=pm25_age9_std)) + geom_histogram()
+
+ggplot(df_age_9, aes(x=bc_age9_std)) + geom_histogram()
+
+ggplot(df_age_9, aes(x=no2_age9_std)) + geom_histogram()
+```
+
+## Outcomes
+
+```{r age 9 outcome, echo=FALSE}
+ggplot(df_age_9, aes(x=CRP_f9)) + geom_histogram()
+ggplot(df_age_9, aes(x=CRP_f9_log)) + geom_histogram()
+ggplot(df_age_9, aes(x=IL6_F9)) + geom_histogram()
+
+```
+
+# Age 15
+## Exposures
+
+```{r age 15 exposures, echo=FALSE}
+ggplot(df_age_15, aes(x=pm25_age15_std)) + geom_histogram()
+
+ggplot(df_age_15, aes(x=bc_age15_std)) + geom_histogram()
+
+ggplot(df_age_15, aes(x=no2_age15_std)) + geom_histogram()
+```
+
+## Outcomes
+
+```{r age 15 outcome, echo=FALSE}
+
+ggplot(df_age_15, aes(x=crp_TF3)) + geom_histogram()
+ggplot(df_age_15, aes(x=crp_TF3_log)) + geom_histogram()
+ggplot(df_age_15, aes(x=Gp_TF3)) + geom_histogram()
+ggplot(df_age_15, aes(x=Gp_TF3_log)) + geom_histogram()
+
+```
+
+# Age 18
+## Exposures
+
+```{r age 18 exposures, echo=FALSE}
+ggplot(df_age_18, aes(x=pm25_age18_std)) + geom_histogram()
+
+ggplot(df_age_18, aes(x=bc_age18_std)) + geom_histogram()
+
+ggplot(df_age_18, aes(x=no2_age18_std)) + geom_histogram()
+```
+
+## Outcomes
+
+```{r age 18 outcome, echo=FALSE}
+ggplot(df_age_18, aes(x=CRP_TF4)) + geom_histogram()
+ggplot(df_age_18, aes(x=CRP_TF4_log)) + geom_histogram()
+ggplot(df_age_18, aes(x=Gp_TF4)) + geom_histogram()
+ggplot(df_age_18, aes(x=Gp_TF4_log)) + geom_histogram()
+
+```
+
+# Age 24
+## Exposures
+
+```{r age 24 exposures, echo=FALSE}
+ggplot(df_age_24, aes(x=pm25_age24_std)) + geom_histogram()
+
+ggplot(df_age_24, aes(x=bc_age24_std)) + geom_histogram()
+
+ggplot(df_age_24, aes(x=no2_age24_std)) + geom_histogram()
+```
+
+## Outcomes
+
+```{r age 24 outcome, echo=FALSE}
+ggplot(df_age_24, aes(x=CRP_F24)) + geom_histogram()
+ggplot(df_age_24, aes(x=CRP_F24_log)) + geom_histogram()
+ggplot(df_age_24, aes(x=IL6_F24)) + geom_histogram()
+ggplot(df_age_24, aes(x=Gp_F24)) + geom_histogram()
+ggplot(df_age_24, aes(x=Gp_F24_log)) + geom_histogram()
+
+```
