@@ -1,4 +1,4 @@
-# Initial data exploration
+# Initial data exploration, cleaning and filtering
 # 15/06/2023
 # Anna Goulding
 
