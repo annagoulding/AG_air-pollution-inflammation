@@ -7,16 +7,37 @@ library(tidyverse)
 
 # functions ####
 # summarise covariates using labels if available
-covar_desc <- function(df, variable, time_point){
+covar_desc <- function(df, variable, variable_label, time_point){
   df %>%
     group_by({{variable}}) %>% 
     summarise(n_obs = n()) %>% 
     ungroup() %>% 
-    mutate(covariate = haven::as_factor({{variable}}, levels = "default")) %>% 
+    mutate(var_levels = haven::as_factor({{variable}}, levels = "default")) %>% 
     mutate(percent = (n_obs/sum(n_obs))*100) %>% 
     mutate(age = time_point) %>% 
-    select(age, covariate, n_obs, percent)
+    select(age, var_levels, n_obs, percent) %>% 
+    mutate(var_levels = (haven::zap_label(var_levels))) %>% 
+    mutate(covariate = variable_label)
 
+}
+
+# summarise exposure variables (same for all time points)
+exposures_desc <- function(df, pm25, no2, bc, time_point){
+ df %>% 
+  summarise(n_obs = n(),
+            median_pm25 = median({{pm25}}, na.rm = T),
+            iqr_pm25 = IQR({{pm25}}, na.rm = T),
+            min_pm25 = min({{pm25}}, na.rm = T),
+            max_pm25 = max({{pm25}}, na.rm = T),
+            median_no2 = median({{no2}}, na.rm = T),
+            iqr_no2 = IQR({{no2}}, na.rm = T),
+            min_no2 = min({{no2}}, na.rm = T),
+            max_no2 = max({{no2}}, na.rm = T),
+            median_bc = median({{bc}}, na.rm = T),
+            iqr_bc = IQR({{bc}}, na.rm = T),
+            min_bc = min({{bc}}, na.rm = T),
+            max_bc = max({{bc}}, na.rm = T)) %>% 
+  mutate(age = time_point)
 }
 
 # set data working directory ####
@@ -29,38 +50,6 @@ df_age_15 <- readRDS(paste0(data, "df_age_15.rds"))
 df_age_18 <- readRDS(paste0(data, "df_age_18.rds"))
 df_age_24 <- readRDS(paste0(data, "df_age_24.rds"))
 
-# Age 7 ####
-# Outcomes
-age_7_outcomes <- df_age_7 %>% 
-  summarise(n_obs = n(),
-            median_glyca = median(Gp_F7_log),
-            iqr_glyca = IQR(Gp_F7_log),
-            min_glyca = min(Gp_F7_log),
-            max_glyca = max(Gp_F7_log)) %>% 
-  mutate(age = 7)
-
-# Exposures
-age_7_exposures <- df_age_7 %>% 
-  summarise(n_obs = n(),
-            median_pm25 = median(pm25_age7_std, na.rm = T),
-            iqr_pm25 = IQR(pm25_age7_std, na.rm = T),
-            min_pm25 = min(pm25_age7_std, na.rm = T),
-            max_pm25 = max(pm25_age7_std, na.rm = T),
-            median_no2 = median(no2_age7_std, na.rm = T),
-            iqr_no2 = IQR(no2_age7_std, na.rm = T),
-            min_no2 = min(no2_age7_std, na.rm = T),
-            max_no2 = max(no2_age7_std, na.rm = T),
-            median_bc = median(bc_age7_std, na.rm = T),
-            iqr_bc = IQR(bc_age7_std, na.rm = T),
-            min_bc = min(bc_age7_std, na.rm = T),
-            max_bc = max(bc_age7_std, na.rm = T)) %>% 
-  mutate(age = 7)
-
-# Covariates
-age_7_sex <- covar_desc(df_age_7, kz021, 7) 
-age_7_class <- covar_desc(df_age_7, social_class, 7) 
-age_7_imd <- covar_desc(df_age_7, f7imd2000q5, 7)
-age_7_mated <- covar_desc(df_age_7, c645a, 7)
 
 # Age 7 ####
 # Outcomes
@@ -73,25 +62,191 @@ age_7_outcomes <- df_age_7 %>%
   mutate(age = 7)
 
 # Exposures
-age_7_exposures <- df_age_7 %>% 
-  summarise(n_obs = n(),
-            median_pm25 = median(pm25_age7_std, na.rm = T),
-            iqr_pm25 = IQR(pm25_age7_std, na.rm = T),
-            min_pm25 = min(pm25_age7_std, na.rm = T),
-            max_pm25 = max(pm25_age7_std, na.rm = T),
-            median_no2 = median(no2_age7_std, na.rm = T),
-            iqr_no2 = IQR(no2_age7_std, na.rm = T),
-            min_no2 = min(no2_age7_std, na.rm = T),
-            max_no2 = max(no2_age7_std, na.rm = T),
-            median_bc = median(bc_age7_std, na.rm = T),
-            iqr_bc = IQR(bc_age7_std, na.rm = T),
-            min_bc = min(bc_age7_std, na.rm = T),
-            max_bc = max(bc_age7_std, na.rm = T)) %>% 
-  mutate(age = 7)
+age_7_exposures <- exposures_desc(df_age_7, pm25_age7, no2_age7, bc_age7, 7) 
+age_7_exposures_std <- exposures_desc(df_age_7, pm25_age7_std, no2_age7_std, bc_age7_std, 7) 
 
 # Covariates
-age_7_sex <- covar_desc(df_age_7, kz021, 7) 
-#age_7_age <- mean(df_age_7$f7003c_years, na.rm = T)
-age_7_class <- covar_desc(df_age_7, social_class, 7) 
-age_7_imd <- covar_desc(df_age_7, f7imd2000q5, 7)
-age_7_mated <- covar_desc(df_age_7, c645a, 7)
+age_7_sex <- covar_desc(df_age_7, kz021, "Sex", 7) 
+age_7_age <- mean(df_age_7$f7003c_years, na.rm = T)
+age_7_class <- covar_desc(df_age_7, social_class, "Social class", 7) 
+age_7_imd <- covar_desc(df_age_7, f7imd2000q5, "Area deprivation", 7)
+age_7_mated <- covar_desc(df_age_7, c645a, "Maternal education", 7)
+
+age_7_covariates <- age_7_sex %>% 
+  bind_rows(age_7_class) %>% 
+  bind_rows(age_7_imd) %>% 
+  bind_rows(age_7_mated)
+
+
+# Age 9 ####
+# Outcomes
+age_9_outcomes <- df_age_9 %>% 
+  summarise(n_obs = n(),
+            median_crp = median(CRP_f9_log, na.rm = T),
+            iqr_crp = IQR(CRP_f9_log, na.rm = T),
+            min_crp = min(CRP_f9_log, na.rm = T),
+            max_crp = max(CRP_f9_log, na.rm = T),
+            median_il6 = median(IL6_F9, na.rm = T),
+            iqr_il6 = IQR(IL6_F9, na.rm = T),
+            min_il6 = min(IL6_F9, na.rm = T),
+            max_il6 = max(IL6_F9, na.rm = T)) %>% 
+  mutate(age = 9)
+
+# Exposures
+age_9_exposures <- exposures_desc(df_age_9, pm25_age9, no2_age9, bc_age9, 9) 
+age_9_exposures_std <- exposures_desc(df_age_9, pm25_age9_std, no2_age9_std, bc_age9_std, 9) 
+
+# Covariates
+age_9_sex <- covar_desc(df_age_9, kz021, "Sex", 9) 
+age_9_age <- mean(df_age_9$f9003c_years, na.rm = T)
+age_9_class <- covar_desc(df_age_9, social_class, "Social class", 9) 
+age_9_imd <- covar_desc(df_age_9, f9imd2000q5, "Area deprivation", 9)
+age_9_mated <- covar_desc(df_age_9, c645a, "Maternal education", 9)
+
+age_9_covariates <- age_9_sex %>% 
+  bind_rows(age_9_class) %>% 
+  bind_rows(age_9_imd) %>% 
+  bind_rows(age_9_mated)
+
+
+# Age 15 ####
+# Outcomes
+age_15_outcomes <- df_age_15 %>% 
+  summarise(n_obs = n(),
+            median_crp = median(crp_TF3_log, na.rm = T),
+            iqr_crp = IQR(crp_TF3_log, na.rm = T),
+            min_crp = min(crp_TF3_log, na.rm = T),
+            max_crp = max(crp_TF3_log, na.rm = T),
+            median_glyca = median(Gp_TF3_log, na.rm = T),
+            iqr_glyca = IQR(Gp_TF3_log, na.rm = T),
+            min_glyca = min(Gp_TF3_log, na.rm = T),
+            max_glyca = max(Gp_TF3_log, na.rm = T)) %>% 
+  mutate(age = 15)
+
+# Exposures
+age_15_exposures <- exposures_desc(df_age_15, pm25_age15, no2_age15, bc_age15, 15) 
+age_15_exposures_std <- exposures_desc(df_age_15, pm25_age15_std, no2_age15_std, bc_age15_std, 15) 
+
+# Covariates
+age_15_sex <- covar_desc(df_age_15, kz021, "Sex", 15) 
+age_15_age <- mean(df_age_15$fh0011a_years, na.rm = T)
+age_15_class <- covar_desc(df_age_15, social_class, "Social class", 15) 
+age_15_imd <- covar_desc(df_age_15, tf3imd2000q5, "Area deprivation", 15)
+age_15_mated <- covar_desc(df_age_15, c645a, "Maternal education", 15)
+
+age_15_covariates <- age_15_sex %>% 
+  bind_rows(age_15_class) %>% 
+  bind_rows(age_15_imd) %>% 
+  bind_rows(age_15_mated)
+
+
+# Age 18 ####
+# Outcomes
+age_18_outcomes <- df_age_18 %>% 
+  summarise(n_obs = n(),
+            median_crp = median(CRP_TF4_log, na.rm = T),
+            iqr_crp = IQR(CRP_TF4_log, na.rm = T),
+            min_crp = min(CRP_TF4_log, na.rm = T),
+            max_crp = max(CRP_TF4_log, na.rm = T),
+            median_glyca = median(Gp_TF4_log, na.rm = T),
+            iqr_glyca = IQR(Gp_TF4_log, na.rm = T),
+            min_glyca = min(Gp_TF4_log, na.rm = T),
+            max_glyca = max(Gp_TF4_log, na.rm = T)) %>% 
+  mutate(age = 18)
+
+# Exposures
+age_18_exposures <- exposures_desc(df_age_18, pm25_age18, no2_age18, bc_age18, 18)
+age_18_exposures_std <- exposures_desc(df_age_18, pm25_age18_std, no2_age18_std, bc_age18_std, 18) 
+
+# Covariates
+age_18_sex <- covar_desc(df_age_18, kz021, "Sex", 18) 
+age_18_age <- mean(df_age_18$FJ003b, na.rm = T)
+age_18_class <- covar_desc(df_age_18, social_class, "Social class", 18) 
+age_18_imd <- covar_desc(df_age_18, tf4imd2000q5, "Area deprivation", 18)
+age_18_mated <- covar_desc(df_age_18, c645a, "Maternal education", 18)
+
+age_18_covariates <- age_18_sex %>% 
+  bind_rows(age_18_class) %>% 
+  bind_rows(age_18_imd) %>% 
+  bind_rows(age_18_mated)
+
+
+# Age 24 ####
+# Outcomes
+age_24_outcomes <- df_age_24 %>% 
+  summarise(n_obs = n(),
+            median_crp = median(CRP_F24_log, na.rm = T),
+            iqr_crp = IQR(CRP_F24_log, na.rm = T),
+            min_crp = min(CRP_F24_log, na.rm = T),
+            max_crp = max(CRP_F24_log, na.rm = T),
+            median_il6 = median(IL6_F24, na.rm = T),
+            iqr_il6 = IQR(IL6_F24, na.rm = T),
+            min_il6 = min(IL6_F24, na.rm = T),
+            max_il6 = max(IL6_F24, na.rm = T),
+            median_glyca = median(Gp_F24_log, na.rm = T),
+            iqr_glyca = IQR(Gp_F24_log, na.rm = T),
+            min_glyca = min(Gp_F24_log, na.rm = T),
+            max_glyca = max(Gp_F24_log, na.rm = T)) %>% 
+  mutate(age = 24)
+
+# Exposures
+age_24_exposures <- exposures_desc(df_age_24, pm25_age24, no2_age24, bc_age24, 24) 
+age_24_exposures_std <- exposures_desc(df_age_24, pm25_age24_std, no2_age24_std, bc_age24_std, 24) 
+
+# Covariates
+age_24_sex <- covar_desc(df_age_24, kz021, "Sex", 24) 
+age_24_age <- df_age_24 %>% summarise(mean_age = mean(FKAR0011, na.rm = T))
+age_24_class <- covar_desc(df_age_24, social_class, "Social class", 24) 
+age_24_imd <- covar_desc(df_age_24, f24imd2000q5, "Area deprivation", 24)
+age_24_mated <- covar_desc(df_age_24, c645a, "Maternal education", 24)
+
+age_24_covariates <- age_24_sex %>% 
+  bind_rows(age_24_class) %>% 
+  bind_rows(age_24_imd) %>% 
+  bind_rows(age_24_mated)
+
+
+# Create unstandardised exposures table ####
+
+desc_stats_exp <- age_7_exposures %>% 
+  bind_rows(age_9_exposures) %>% 
+  bind_rows(age_15_exposures) %>% 
+  bind_rows(age_18_exposures) %>% 
+  bind_rows(age_24_exposures) %>% 
+  pivot_longer(cols = !age, names_to = "measure", values_to = "value") %>% 
+  pivot_wider(names_from = age, values_from = value, names_prefix = "age_")
+
+# Create standardised exposures table ####
+
+desc_stats_exp_std <- age_7_exposures_std %>% 
+  bind_rows(age_9_exposures_std) %>% 
+  bind_rows(age_15_exposures_std) %>% 
+  bind_rows(age_18_exposures_std) %>% 
+  bind_rows(age_24_exposures_std) %>% 
+  pivot_longer(cols = !age, names_to = "measure", values_to = "value") %>% 
+  pivot_wider(names_from = age, values_from = value, names_prefix = "age_")
+
+
+# Create outcomes table ####
+
+desc_stats_out <- age_7_outcomes %>% 
+  bind_rows(age_9_outcomes) %>% 
+  bind_rows(age_15_outcomes) %>% 
+  bind_rows(age_18_outcomes) %>% 
+  bind_rows(age_24_outcomes) %>% 
+  pivot_longer(cols = !age, names_to = "measure", values_to = "value") %>% 
+  pivot_wider(names_from = age, values_from = value, names_prefix = "age_")
+
+
+# Create covariates table ####
+
+desc_stats_covar <- age_7_covariates %>% 
+  bind_rows(age_9_covariates) %>% 
+  bind_rows(age_15_covariates) %>% 
+  bind_rows(age_18_covariates) %>% 
+  bind_rows(age_24_covariates) %>% 
+  pivot_wider(id_cols = c(covariate, var_levels), names_from = age, 
+              values_from = c(n_obs, percent), names_prefix = "age_",
+              names_vary = "slowest") %>% 
+  arrange(covariate)
+
