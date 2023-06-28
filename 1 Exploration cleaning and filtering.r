@@ -56,7 +56,7 @@ df3_log <- df3 %>%
 df3_limited <- df3_log %>% 
   select(cidB4317, kz021, f7003c_years, f9003c_years, fh0011a_years, FJ003b, FKAR0011, matches("ms026a"), fh3019, FJMR022a, FKMS1040, matches("imd2000"), 
          c645a, social_class, matches("CRP_"), matches("crp_"), 
-         matches("IL6_"), matches("Gp_"), ends_with("_std"))
+         matches("IL6_"), matches("Gp_"), matches("pm25_age"), matches("bc_age"), matches("no2_age"))
 
 # drop rows with insufficient data and record how many are dropped for each reason ####
 # overall dataset
@@ -100,7 +100,7 @@ num_9 <- nrow(num_out_9) - nrow(num_ex_out_9)
 
 # no confounder variables
 df_age_9 <- num_ex_out_9 %>% 
-  drop_na(kz021, f9003c_years, f9imd2000q5, social_class)
+  drop_na(kz021, f9003c_years, f9imd2000q5, social_class, c645a)
 num_conf_9 <- nrow(num_ex_out_9) - nrow(df_age_9)
 
 # save out age 9 file
@@ -116,7 +116,7 @@ num_15 <- nrow(num_out_15) - nrow(num_ex_out_15)
 
 # no confounder variables
 df_age_15 <- num_ex_out_15 %>% 
-  drop_na(kz021, fh0011a_years, tf3imd2000q5, social_class)
+  drop_na(kz021, fh0011a_years, tf3imd2000q5, social_class, c645a)
 num_conf_15 <- nrow(num_ex_out_15) - nrow(df_age_15)
 
 # save out age 15 file
@@ -132,7 +132,7 @@ num_18 <- nrow(num_out_18) - nrow(num_ex_out_18)
 
 # no confounder variables
 df_age_18 <- num_ex_out_18 %>% 
-  drop_na(kz021, FJ003b, tf4imd2000q5, social_class)
+  drop_na(kz021, FJ003b, tf4imd2000q5, social_class, c645a)
 num_conf_18 <- nrow(num_ex_out_18) - nrow(df_age_18)
 
 # save out age 18 file
@@ -148,7 +148,7 @@ num_24 <- nrow(num_out_24) - nrow(num_ex_out_24)
 
 # no confounder variables
 df_age_24 <- num_ex_out_24 %>% 
-  drop_na(kz021, FKAR0011, f24imd2000q5, social_class)
+  drop_na(kz021, FKAR0011, f24imd2000q5, social_class, c645a)
 num_conf_24 <- nrow(num_ex_out_24) - nrow(df_age_24)
 
 # save out age 24 file
