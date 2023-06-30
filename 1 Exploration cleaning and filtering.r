@@ -50,7 +50,7 @@ df3 <- df2_age %>%
 
 # transformation of outcome variables ####
 df3_log <- df3 %>%
-  mutate_at(vars( matches("CRP_"), matches("crp_"), matches("Gp_")), list(log = ~ log(.)), NA)
+  mutate_at(vars( matches("CRP_"), matches("crp_"), matches("Gp_"), IL6_pgml_f9), list(log = ~ log(.)), NA)
 
 # drop unused variables
 df3_limited <- df3_log %>% 
@@ -93,7 +93,7 @@ saveRDS(df_age_7, file = paste0(data, "df_age_7.rds"))
 
 ### age 9
 num_out_9 <- num_outcome %>% 
-  filter_at(vars(CRP_f9, IL6_pgml_f9, IL6_F9), any_vars(!is.na(.)))
+  filter_at(vars(CRP_f9, IL6_pgml_f9), any_vars(!is.na(.)))
 num_ex_out_9 <- num_out_9 %>% 
   filter_at(vars(contains("age9")), any_vars(!is.na(.)))
 num_9 <- nrow(num_out_9) - nrow(num_ex_out_9)
@@ -141,7 +141,7 @@ saveRDS(df_age_18, file = paste0(data, "df_age_18.rds"))
 
 ### age 24
 num_out_24 <- num_outcome %>% 
-  filter_at(vars(CRP_F24, IL6_F24, Gp_F24), any_vars(!is.na(.)))
+  filter_at(vars(CRP_F24, Gp_F24), any_vars(!is.na(.)))
 num_ex_out_24 <- num_out_24 %>% 
   filter_at(vars(contains("age24")), any_vars(!is.na(.)))
 num_24 <- nrow(num_out_24) - nrow(num_ex_out_24)

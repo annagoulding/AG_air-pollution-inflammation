@@ -66,7 +66,8 @@ ggplot(df_age_9, aes(x=no2_age9_std)) + geom_histogram()
 ```{r age 9 outcome, echo=FALSE}
 ggplot(df_age_9, aes(x=CRP_f9)) + geom_histogram()
 ggplot(df_age_9, aes(x=CRP_f9_log)) + geom_histogram()
-ggplot(df_age_9, aes(x=IL6_F9)) + geom_histogram()
+ggplot(df_age_9, aes(x=IL6_pgml_f9)) + geom_histogram()
+ggplot(df_age_9, aes(x=IL6_pgml_f9_log)) + geom_histogram()
 
 ```
 
@@ -129,7 +130,7 @@ ggplot(df_age_24, aes(x=no2_age24_std)) + geom_histogram()
 ```{r age 24 outcome, echo=FALSE}
 ggplot(df_age_24, aes(x=CRP_F24)) + geom_histogram()
 ggplot(df_age_24, aes(x=CRP_F24_log)) + geom_histogram()
-ggplot(df_age_24, aes(x=IL6_F24)) + geom_histogram()
+#ggplot(df_age_24, aes(x=IL6_F24)) + geom_histogram()
 ggplot(df_age_24, aes(x=Gp_F24)) + geom_histogram()
 ggplot(df_age_24, aes(x=Gp_F24_log)) + geom_histogram()
 

@@ -46,8 +46,8 @@ exposures_desc <- function(df, pm25, no2, bc, time_point){
 # summarise age variables
 age_desc <- function(df, age_variable, time_point){
   df %>% 
-    summarise(median_age = median({{age_variable}}, na.rm = T),
-              iqr_age = IQR({{age_variable}}, na.rm = T),
+    summarise(mean_age = mean({{age_variable}}, na.rm = T),
+              sd_age = sd({{age_variable}}, na.rm = T),
               min_age = min({{age_variable}}, na.rm = T),
               max_age = max({{age_variable}}, na.rm = T)) %>% 
     mutate(age = time_point)
@@ -68,11 +68,11 @@ df_age_24 <- readRDS(paste0(data, "df_age_24.rds"))
 # Age 7 ####
 # Outcomes
 age_7_outcomes <- df_age_7 %>% 
-  summarise(n_obs_glyca = sum(!is.na(Gp_F7_log)),
-            median_glyca = median(Gp_F7_log),
-            iqr_glyca = IQR(Gp_F7_log),
-            min_glyca = min(Gp_F7_log),
-            max_glyca = max(Gp_F7_log)) %>% 
+  summarise(n_obs_glyca = sum(!is.na(Gp_F7)),
+            median_glyca = median(Gp_F7),
+            iqr_glyca = IQR(Gp_F7),
+            min_glyca = min(Gp_F7),
+            max_glyca = max(Gp_F7)) %>% 
   mutate(age = 7)
 
 # Exposures
@@ -95,16 +95,16 @@ age_7_covariates <- age_7_sex %>%
 # Age 9 ####
 # Outcomes
 age_9_outcomes <- df_age_9 %>% 
-  summarise(n_obs_crp = sum(!is.na(CRP_f9_log)),
-            median_crp = median(CRP_f9_log, na.rm = T),
-            iqr_crp = IQR(CRP_f9_log, na.rm = T),
-            min_crp = min(CRP_f9_log, na.rm = T),
-            max_crp = max(CRP_f9_log, na.rm = T),
-            n_obs_il6 = sum(!is.na(IL6_F9)),
-            median_il6 = median(IL6_F9, na.rm = T),
-            iqr_il6 = IQR(IL6_F9, na.rm = T),
-            min_il6 = min(IL6_F9, na.rm = T),
-            max_il6 = max(IL6_F9, na.rm = T)) %>% 
+  summarise(n_obs_crp = sum(!is.na(CRP_f9)),
+            median_crp = median(CRP_f9, na.rm = T),
+            iqr_crp = IQR(CRP_f9, na.rm = T),
+            min_crp = min(CRP_f9, na.rm = T),
+            max_crp = max(CRP_f9, na.rm = T),
+            n_obs_il6 = sum(!is.na(IL6_pgml_f9)),
+            median_il6 = median(IL6_pgml_f9, na.rm = T),
+            iqr_il6 = IQR(IL6_pgml_f9, na.rm = T),
+            min_il6 = min(IL6_pgml_f9, na.rm = T),
+            max_il6 = max(IL6_pgml_f9, na.rm = T)) %>% 
   mutate(age = 9)
 
 # Exposures
@@ -127,16 +127,16 @@ age_9_covariates <- age_9_sex %>%
 # Age 15 ####
 # Outcomes
 age_15_outcomes <- df_age_15 %>% 
-  summarise(n_obs_crp = sum(!is.na(crp_TF3_log)),
-            median_crp = median(crp_TF3_log, na.rm = T),
-            iqr_crp = IQR(crp_TF3_log, na.rm = T),
-            min_crp = min(crp_TF3_log, na.rm = T),
-            max_crp = max(crp_TF3_log, na.rm = T),
-            n_obs_glyca = sum(!is.na(Gp_TF3_log)),
-            median_glyca = median(Gp_TF3_log, na.rm = T),
-            iqr_glyca = IQR(Gp_TF3_log, na.rm = T),
-            min_glyca = min(Gp_TF3_log, na.rm = T),
-            max_glyca = max(Gp_TF3_log, na.rm = T)) %>% 
+  summarise(n_obs_crp = sum(!is.na(crp_TF3)),
+            median_crp = median(crp_TF3, na.rm = T),
+            iqr_crp = IQR(crp_TF3, na.rm = T),
+            min_crp = min(crp_TF3, na.rm = T),
+            max_crp = max(crp_TF3, na.rm = T),
+            n_obs_glyca = sum(!is.na(Gp_TF3)),
+            median_glyca = median(Gp_TF3, na.rm = T),
+            iqr_glyca = IQR(Gp_TF3, na.rm = T),
+            min_glyca = min(Gp_TF3, na.rm = T),
+            max_glyca = max(Gp_TF3, na.rm = T)) %>% 
   mutate(age = 15)
 
 # Exposures
@@ -159,16 +159,16 @@ age_15_covariates <- age_15_sex %>%
 # Age 18 ####
 # Outcomes
 age_18_outcomes <- df_age_18 %>% 
-  summarise(n_obs_crp = sum(!is.na(CRP_TF4_log)),
-            median_crp = median(CRP_TF4_log, na.rm = T),
-            iqr_crp = IQR(CRP_TF4_log, na.rm = T),
-            min_crp = min(CRP_TF4_log, na.rm = T),
-            max_crp = max(CRP_TF4_log, na.rm = T),
-            n_obs_glyca = sum(!is.na(Gp_TF4_log)),
-            median_glyca = median(Gp_TF4_log, na.rm = T),
-            iqr_glyca = IQR(Gp_TF4_log, na.rm = T),
-            min_glyca = min(Gp_TF4_log, na.rm = T),
-            max_glyca = max(Gp_TF4_log, na.rm = T)) %>% 
+  summarise(n_obs_crp = sum(!is.na(CRP_TF4)),
+            median_crp = median(CRP_TF4, na.rm = T),
+            iqr_crp = IQR(CRP_TF4, na.rm = T),
+            min_crp = min(CRP_TF4, na.rm = T),
+            max_crp = max(CRP_TF4, na.rm = T),
+            n_obs_glyca = sum(!is.na(Gp_TF4)),
+            median_glyca = median(Gp_TF4, na.rm = T),
+            iqr_glyca = IQR(Gp_TF4, na.rm = T),
+            min_glyca = min(Gp_TF4, na.rm = T),
+            max_glyca = max(Gp_TF4, na.rm = T)) %>% 
   mutate(age = 18)
 
 # Exposures
@@ -191,21 +191,21 @@ age_18_covariates <- age_18_sex %>%
 # Age 24 ####
 # Outcomes
 age_24_outcomes <- df_age_24 %>% 
-  summarise(n_obs_crp = sum(!is.na(CRP_F24_log)),
-            median_crp = median(CRP_F24_log, na.rm = T),
-            iqr_crp = IQR(CRP_F24_log, na.rm = T),
-            min_crp = min(CRP_F24_log, na.rm = T),
-            max_crp = max(CRP_F24_log, na.rm = T),
-            n_obs_il6 = sum(!is.na(IL6_F24)),
-            median_il6 = median(IL6_F24, na.rm = T),
-            iqr_il6 = IQR(IL6_F24, na.rm = T),
-            min_il6 = min(IL6_F24, na.rm = T),
-            max_il6 = max(IL6_F24, na.rm = T),
-            n_obs_glyca = sum(!is.na(Gp_F24_log)),
-            median_glyca = median(Gp_F24_log, na.rm = T),
-            iqr_glyca = IQR(Gp_F24_log, na.rm = T),
-            min_glyca = min(Gp_F24_log, na.rm = T),
-            max_glyca = max(Gp_F24_log, na.rm = T)) %>% 
+  summarise(n_obs_crp = sum(!is.na(CRP_F24)),
+            median_crp = median(CRP_F24, na.rm = T),
+            iqr_crp = IQR(CRP_F24, na.rm = T),
+            min_crp = min(CRP_F24, na.rm = T),
+            max_crp = max(CRP_F24, na.rm = T),
+            #n_obs_il6 = sum(!is.na(IL6_F24)),
+            #median_il6 = median(IL6_F24, na.rm = T),
+            #iqr_il6 = IQR(IL6_F24, na.rm = T),
+            #min_il6 = min(IL6_F24, na.rm = T),
+            #max_il6 = max(IL6_F24, na.rm = T),
+            n_obs_glyca = sum(!is.na(Gp_F24)),
+            median_glyca = median(Gp_F24, na.rm = T),
+            iqr_glyca = IQR(Gp_F24, na.rm = T),
+            min_glyca = min(Gp_F24, na.rm = T),
+            max_glyca = max(Gp_F24, na.rm = T)) %>% 
   mutate(age = 24)
 
 # Exposures
@@ -281,7 +281,6 @@ template <- openxlsx::loadWorkbook(file.path(paste0(results, "Templates/Descript
 
 writeData(template, "Outcomes", select(desc_stats_out, -c(measure)), startCol = 3, startRow = 4, colNames = FALSE)
 writeData(template, "Exposures", select(desc_stats_exp, -c(measure)), startCol = 3, startRow = 4, colNames = FALSE)
-writeData(template, "Standardised Exposures", select(desc_stats_exp_std, -c(measure)), startCol = 3, startRow = 4, colNames = FALSE)
 writeData(template, "Covariates", select(desc_stats_covar, -c(covariate)), startCol = 2, startRow = 4, colNames = FALSE)
 writeData(template, "Covariates", desc_stats_age, startCol = 1, startRow = 28, colNames = FALSE)
 
