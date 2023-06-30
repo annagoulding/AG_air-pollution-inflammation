@@ -28,9 +28,10 @@ initial_dataset %>%
 initial_dataset %>% 
   tabyl(c645a)
 
-
 # create single parental social class variable ####
 df2 <- initial_dataset %>%
+  mutate(c755 = if_else(c755 == 65, NA, c755)) %>% 
+  mutate(c765 = if_else(c765 == 65, NA, c765)) %>% 
   mutate(social_class = if_else(!is.na(c755), c755, c765))
 
 df2 %>% 
@@ -154,3 +155,17 @@ num_conf_24 <- nrow(num_ex_out_24) - nrow(df_age_24)
 # save out age 24 file
 saveRDS(df_age_24, file = paste0(data, "df_age_24.rds"))
 
+
+# checking correlation between maternal education and social class####
+test_overall <- cor.test(df3$social_class, df3$c645a)
+test7 <- cor.test(df_age_7$social_class, df_age_7$c645a)
+test9 <- cor.test(df_age_9$social_class, df_age_9$c645a)
+test15 <- cor.test(df_age_15$social_class, df_age_15$c645a)
+test18 <- cor.test(df_age_18$social_class, df_age_18$c645a)
+test24 <- cor.test(df_age_24$social_class, df_age_24$c645a)
+test_overall
+test7
+test9
+test15
+test18
+test24
