@@ -157,12 +157,12 @@ saveRDS(df_age_24, file = paste0(data, "df_age_24.rds"))
 
 
 # checking correlation between maternal education and social class####
-test_overall <- cor.test(df3$social_class, df3$c645a)
-test7 <- cor.test(df_age_7$social_class, df_age_7$c645a)
-test9 <- cor.test(df_age_9$social_class, df_age_9$c645a)
-test15 <- cor.test(df_age_15$social_class, df_age_15$c645a)
-test18 <- cor.test(df_age_18$social_class, df_age_18$c645a)
-test24 <- cor.test(df_age_24$social_class, df_age_24$c645a)
+test_overall <- cor.test(df3$social_class, df3$c645a, method = "kendall")
+test7 <- cor.test(df_age_7$social_class, df_age_7$c645a, method = "kendall")
+test9 <- cor.test(df_age_9$social_class, df_age_9$c645a, method = "kendall")
+test15 <- cor.test(df_age_15$social_class, df_age_15$c645a, method = "kendall")
+test18 <- cor.test(df_age_18$social_class, df_age_18$c645a, method = "kendall")
+test24 <- cor.test(df_age_24$social_class, df_age_24$c645a, method = "kendall")
 test_overall
 test7
 test9
