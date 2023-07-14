@@ -13,6 +13,7 @@ library(tidyverse)
 library(broom)
 library(cowplot)
 library(knitr)
+library(haven)
 
 # set working directories ####
 data <- "//rdsfcifs.acrc.bris.ac.uk/MRC-IEU-research/projects/wt1/wp3/037/working/data/"
@@ -28,6 +29,19 @@ df_age_24 <- readRDS(paste0(data, "df_age_24.rds"))
 
 ```{r functions, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
+
+# Running a regression
+run_regression <- function(outcome_vars, exposure_vars, constant_vars, fixed_vars, data) {
+  result <- map(outcome_vars, function(outcome) {
+    map(exposure_vars, function(exposure) {
+      formula <- as.formula(paste(outcome, "~", paste(c(exposure, fixed_vars, constant_vars), collapse = "+")))
+      lm(formula, data = data)
+    })
+  })
+  return(result)
+}
+
+# Plotting resuduals
 residual_plots <- function(df, model, outcome, exposure){
   
     # Keep rows with complete data
@@ -37,348 +51,308 @@ residual_plots <- function(df, model, outcome, exposure){
   # Add residuals to data
   df_limited$residual <- model$residuals
   
-  # Make a scatterplot
-  g1 <- qplot({{exposure}}, {{outcome}}, 
-              data = df_limited,
-              geom = "point") + 
-    geom_abline(intercept = model$coefficients[1],
-                slope = model$coefficients[2],
-                colour = "red") +
-    labs(x = "X",
-         y = "Y",
-         title = "Scatterplot of data")
-  
-  # Make a scatter plot of residuals against fitted values
-  g2 <- qplot(model$fitted, model$residuals,
-              geom = "point") +
-    geom_abline(intercept = 0,
-                slope = 0,
-                colour = "red") +
-    labs(title = "Plot of residuals vs fitted values",
-         x = "fitted value",
-         y = "residual")
-  
   # Make a histogram of the residuals
-  g3 <- qplot(model$residuals,
+  g1 <- qplot(model$residuals,
               geom = "histogram",
               bins = 10) +
     labs(title = "Histogram of residuals",
          x = "residual")
   
   # Make a quantile-quantile plot
-  g4 <-ggplot(data = df_limited,
+  g2 <-ggplot(data = df_limited,
               aes(sample = residual)) +
     geom_qq() +
     geom_qq_line(colour = "red") +
     labs(title = "Quantile plot of residuals")
   
   # Plot the plots
-  g <- plot_grid(g1, g2, g3, g4, ncol = 2, labels = "auto")
+  g <- plot_grid(g1, g2, ncol = 2, labels = "auto")
   
   g
 }
 ```
 
+```{r constant variables}
+# set variables which will be the same for all models
+constant_vars <- c("as_factor(kz021)", "as_factor(social_class)", "as_factor(c645a)")
+
+```
+
+
+```{r age 7 models}
+# data
+outcome_vars <- c("Gp_F7_log", "Gp_F7_log", "Gp_F7_log")#repeated because map function requires vectors of equal length
+exposure_vars <- c("pm25_age7_std", "bc_age7_std", "no2_age7_std")
+fixed_vars <- c("f7003c_years", "as_factor(f7imd2000q5)")
+data <- df_age_7
+
+result_7 <- run_regression(outcome_vars, exposure_vars, constant_vars, fixed_vars, data)
+```
+
+```{r age 9 models}
+# data
+outcome_vars <- c("CRP_f9_log", "IL6_pgml_f9_log", "IL6_pgml_f9_log")#last one repeated because map function requires vectors of equal length
+exposure_vars <- c("pm25_age9_std", "bc_age9_std", "no2_age9_std")
+fixed_vars <- c("f9003c_years", "as_factor(f9imd2000q5)")
+data <- df_age_9
+
+# Run lm() using nested map() functions
+result_9 <- run_regression(outcome_vars, exposure_vars, constant_vars, fixed_vars, data)
+```
+
+```{r age 15 models}
+# data
+outcome_vars <- c("Gp_TF3_log", "crp_TF3_log", "crp_TF3_log")#last one repeated because map function requires vectors of equal length
+exposure_vars <- c("pm25_age15_std", "bc_age15_std", "no2_age15_std")
+fixed_vars <- c("fh0011a_years", "as_factor(tf3imd2000q5)")
+data <- df_age_15
+
+# Run lm() using nested map() functions
+result_15 <- run_regression(outcome_vars, exposure_vars, constant_vars, fixed_vars, data)
+```
+
+```{r age 18 models}
+# data
+outcome_vars <- c("Gp_TF4_log", "CRP_TF4_log", "CRP_TF4_log")#last one repeated because map function requires vectors of equal length
+exposure_vars <- c("pm25_age18_std", "bc_age18_std", "no2_age18_std")
+fixed_vars <- c("FJ003b", "as_factor(tf4imd2000q5)")
+data <- df_age_18
+
+# Run lm() using nested map() functions
+result_18 <- run_regression(outcome_vars, exposure_vars, constant_vars, fixed_vars, data)
+```
+
+```{r age 24 models}
+# data
+outcome_vars <- c("Gp_F24_log", "CRP_F24_log", "CRP_F24_log") #last one repeated because map function requires vectors of equal length
+exposure_vars <- c("pm25_age24_std", "bc_age24_std", "no2_age24_std")
+fixed_vars <- c("FKAR0011", "as_factor(f24imd2000q5)")
+
+# dataset
+data <- df_age_24
+
+# Run lm() using nested map() functions
+result_24 <- run_regression(outcome_vars, exposure_vars, constant_vars, fixed_vars, data)
+```
 
 # Age 7
 ## GlycA and PM~2.5~
 ```{r Age 7 glyca and pm2.5}
-model_1 <- lm(Gp_F7_log ~ pm25_age7_std + kz021 + f7003c_years 
-                      + social_class + f7imd2000q5 + c645a, data = df_age_7) 
-model_1_tidy <- tidy(model_1)
-
-kable(model_1_tidy)
-
-residual_plots(df_age_7, model_1, Gp_F7_log, pm25_age7_std)
+# Table
+kable(tidy(result_7[[1]][[1]]))
+# Plots
+residual_plots(df_age_7, result_7[[1]][[1]], Gp_F7_log, pm25_age7_std)
 ```
 
 ## GlycA and black carbon
 ```{r Age 7 glyca and bc}
-model_2 <- lm(Gp_F7_log ~ bc_age7_std + kz021 + f7003c_years 
-                      + social_class + f7imd2000q5 + c645a, data = df_age_7) 
-model_2_tidy <- tidy(model_2)
-
-knitr::kable(model_2_tidy)
-
-residual_plots(df_age_7, model_2, Gp_F7_log, bc_age7_std)
+# Table
+kable(tidy(result_7[[1]][[2]]))
+# Plots
+residual_plots(df_age_7, result_7[[1]][[2]], Gp_F7_log, bc_age7_std)
 ```
 
 ## GlycA and NO~2~
 ```{r Age 7 glyca and no2}
-model_3 <- lm(Gp_F7_log ~ no2_age7_std + kz021 + f7003c_years 
-                      + social_class + f7imd2000q5 + c645a, data = df_age_7) 
-model_3_tidy <- tidy(model_3)
-
-knitr::kable(model_3_tidy)
-
-residual_plots(df_age_7, model_3, Gp_F7_log, no2_age7_std)
+# Table
+kable(tidy(result_7[[1]][[3]]))
+# Plots
+residual_plots(df_age_7, result_7[[1]][[3]], Gp_F7_log, no2_age7_std)
 ```
 
 
 # Age 9
 ## CRP and PM~2.5~
 ```{r Age 9 crp and pm2.5}
-model_4 <- lm(CRP_f9_log ~ pm25_age9_std + kz021 + f9003c_years 
-                      + social_class + f9imd2000q5 + c645a, data = df_age_9) 
-model_4_tidy <- tidy(model_4)
-
-kable(model_4_tidy)
-
-residual_plots(df_age_9, model_4, CRP_f9_log, pm25_age9_std)
+# Table
+kable(tidy(result_9[[1]][[1]]))
+# Plots
+residual_plots(df_age_9, result_9[[1]][[1]], CRP_f9_log, pm25_age9_std)
 ```
 
 ## CRP and black carbon
 ```{r Age 9 crp and bc}
-model_5 <- lm(CRP_f9_log ~ bc_age9_std + kz021 + f9003c_years 
-                      + social_class + f9imd2000q5 + c645a, data = df_age_9) 
-model_5_tidy <- tidy(model_5)
-
-knitr::kable(model_5_tidy)
-
-residual_plots(df_age_9, model_5, CRP_f9_log, bc_age9_std)
+# Table
+kable(tidy(result_9[[1]][[2]]))
+# Plots
+residual_plots(df_age_9, result_9[[1]][[2]], CRP_f9_log, bc_age9_std)
 ```
 
 ## CRP and NO~2~
 ```{r Age 9 crp and no2}
-model_6 <- lm(CRP_f9_log ~ no2_age9_std + kz021 + f9003c_years 
-                      + social_class + f9imd2000q5 + c645a, data = df_age_9) 
-model_6_tidy <- tidy(model_6)
-
-knitr::kable(model_6_tidy)
-
-residual_plots(df_age_9, model_6, CRP_f9_log, no2_age9_std)
+# Table
+kable(tidy(result_9[[1]][[3]]))
+# Plots
+residual_plots(df_age_9, result_9[[1]][[3]], CRP_f9_log, no2_age9_std)
 ```
 
 ## IL-6 and PM~2.5~
 ```{r Age 9 IL-6 and pm2.5}
-model_7 <- lm(IL6_pgml_f9_log ~ pm25_age9_std + kz021 + f9003c_years 
-                      + social_class + f9imd2000q5 + c645a, data = df_age_9) 
-model_7_tidy <- tidy(model_7)
-
-kable(model_7_tidy)
-
-residual_plots(df_age_9, model_7, IL6_pgml_f9_log, pm25_age9_std)
+# Table
+kable(tidy(result_9[[2]][[1]]))
+# Plots
+residual_plots(df_age_9, result_9[[2]][[1]], IL6_pgml_f9_log, pm25_age9_std)
 ```
 
 ## IL-6 and black carbon
 ```{r Age 9 IL-6 and bc}
-model_8 <- lm(IL6_pgml_f9_log ~ bc_age9_std + kz021 + f9003c_years 
-                      + social_class + f9imd2000q5 + c645a, data = df_age_9) 
-model_8_tidy <- tidy(model_8)
-
-knitr::kable(model_8_tidy)
-
-residual_plots(df_age_9, model_8, IL6_pgml_f9_log, bc_age9_std)
+# Table
+kable(tidy(result_9[[2]][[2]]))
+# Plots
+residual_plots(df_age_9, result_9[[2]][[2]], IL6_pgml_f9_log, bc_age9_std)
 ```
 
 ## IL-6 and NO~2~
 ```{r Age 9 IL-6 and no2}
-model_9 <- lm(IL6_pgml_f9_log ~ no2_age9_std + kz021 + f9003c_years 
-                      + social_class + f9imd2000q5 + c645a, data = df_age_9) 
-model_9_tidy <- tidy(model_9)
-
-knitr::kable(model_9_tidy)
-
-residual_plots(df_age_9, model_9, IL6_pgml_f9_log, no2_age9_std)
+# Table
+kable(tidy(result_9[[2]][[3]]))
+# Plots
+residual_plots(df_age_9, result_9[[2]][[3]], IL6_pgml_f9_log, no2_age9_std)
 ```
 
 # Age 15
-## CRP and PM~2.5~
-```{r Age 15 crp and pm2.5}
-model_10 <- lm(crp_TF3_log ~ pm25_age15_std + kz021 + fh0011a_years 
-                      + social_class + tf3imd2000q5 + c645a, data = df_age_15) 
-model_10_tidy <- tidy(model_10)
-
-kable(model_10_tidy)
-
-residual_plots(df_age_15, model_10, crp_TF3_log, pm25_age15_std)
-```
-
-## CRP and black carbon
-```{r Age 15 crp and bc}
-model_11 <- lm(crp_TF3_log ~ bc_age15_std + kz021 + fh0011a_years 
-                      + social_class + tf3imd2000q5 + c645a, data = df_age_15) 
-model_11_tidy <- tidy(model_11)
-
-knitr::kable(model_11_tidy)
-
-residual_plots(df_age_15, model_11, crp_TF3_log, bc_age15_std)
-```
-
-## CRP and NO~2~
-```{r Age 15 crp and no2}
-model_12 <- lm(crp_TF3_log ~ no2_age15_std + kz021 + fh0011a_years 
-                      + social_class + tf3imd2000q5 + c645a, data = df_age_15) 
-model_12_tidy <- tidy(model_12)
-
-knitr::kable(model_12_tidy)
-
-residual_plots(df_age_15, model_12, crp_TF3_log, no2_age15_std)
-```
-
 ## GlycA and PM~2.5~
 ```{r Age 15 GlycA and pm2.5}
-model_13 <- lm(Gp_TF3_log ~ pm25_age15_std + kz021 + fh0011a_years 
-                      + social_class + tf3imd2000q5 + c645a, data = df_age_15) 
-model_13_tidy <- tidy(model_13)
-
-kable(model_13_tidy)
-
-residual_plots(df_age_15, model_13, Gp_TF3_log, pm25_age15_std)
+# Table
+kable(tidy(result_15[[1]][[1]]))
+# Plots
+residual_plots(df_age_15, result_15[[1]][[1]], Gp_TF3_log, pm25_age15_std)
 ```
 
 ## GlycA and black carbon
 ```{r Age 15 GlycA and bc}
-model_14 <- lm(Gp_TF3_log ~ bc_age15_std + kz021 + fh0011a_years 
-                      + social_class + tf3imd2000q5 + c645a, data = df_age_15) 
-model_14_tidy <- tidy(model_14)
-
-knitr::kable(model_14_tidy)
-
-residual_plots(df_age_15, model_14, Gp_TF3_log, bc_age15_std)
+# Table
+kable(tidy(result_15[[1]][[2]]))
+# Plots
+residual_plots(df_age_15, result_15[[1]][[2]], Gp_TF3_log, bc_age15_std)
 ```
 
 ## GlycA and NO~2~
 ```{r Age 15 GlycA and no2}
-model_15 <- lm(Gp_TF3_log ~ no2_age15_std + kz021 + fh0011a_years 
-                      + social_class + tf3imd2000q5 + c645a, data = df_age_15) 
-model_15_tidy <- tidy(model_15)
-
-knitr::kable(model_15_tidy)
-
-residual_plots(df_age_15, model_15, Gp_TF3_log, no2_age15_std)
+# Table
+kable(tidy(result_15[[1]][[3]]))
+# Plots
+residual_plots(df_age_15, result_15[[1]][[3]], Gp_TF3_log, no2_age15_std)
 ```
 
-# Age 18
 ## CRP and PM~2.5~
-```{r Age 18 crp and pm2.5}
-model_16 <- lm(CRP_TF4_log ~ pm25_age18_std + kz021 + FJ003b 
-                      + social_class + tf4imd2000q5 + c645a, data = df_age_18) 
-model_16_tidy <- tidy(model_16)
-
-kable(model_16_tidy)
-
-residual_plots(df_age_18, model_16, CRP_TF4_log, pm25_age18_std)
+```{r Age 15 crp and pm2.5}
+# Table
+kable(tidy(result_15[[2]][[1]]))
+# Plots
+residual_plots(df_age_15, result_15[[2]][[1]], crp_TF3_log, pm25_age15_std)
 ```
 
 ## CRP and black carbon
-```{r Age 18 crp and bc}
-model_17 <- lm(CRP_TF4_log ~ bc_age18_std + kz021 + FJ003b 
-                      + social_class + tf4imd2000q5 + c645a, data = df_age_18) 
-model_17_tidy <- tidy(model_17)
-
-knitr::kable(model_17_tidy)
-
-residual_plots(df_age_18, model_17, CRP_TF4_log, bc_age18_std)
+```{r Age 15 crp and bc}
+# Table
+kable(tidy(result_15[[2]][[2]]))
+# Plots
+residual_plots(df_age_15, result_15[[2]][[2]], crp_TF3_log, bc_age15_std)
 ```
 
 ## CRP and NO~2~
-```{r Age 18 crp and no2}
-model_18 <- lm(CRP_TF4_log ~ no2_age18_std + kz021 + FJ003b 
-                      + social_class + tf4imd2000q5 + c645a, data = df_age_18) 
-model_18_tidy <- tidy(model_18)
-
-knitr::kable(model_18_tidy)
-
-residual_plots(df_age_18, model_18, CRP_TF4_log, no2_age18_std)
+```{r Age 15 crp and no2}
+# Table
+kable(tidy(result_15[[2]][[3]]))
+# Plots
+residual_plots(df_age_15, result_15[[2]][[3]], crp_TF3_log, no2_age15_std)
 ```
 
+# Age 18
 ## GlycA and PM~2.5~
 ```{r Age 18 GlycA and pm2.5}
-model_19 <- lm(Gp_TF4_log ~ pm25_age18_std + kz021 + FJ003b 
-                      + social_class + tf4imd2000q5 + c645a, data = df_age_18) 
-model_19_tidy <- tidy(model_19)
-
-kable(model_19_tidy)
-
-residual_plots(df_age_18, model_19, Gp_TF4_log, pm25_age18_std)
+# Table
+kable(tidy(result_18[[1]][[1]]))
+# Plots
+residual_plots(df_age_18, result_18[[1]][[1]], Gp_TF4_log, pm25_age18_std)
 ```
 
 ## GlycA and black carbon
 ```{r Age 18 GlycA and bc}
-model_20 <- lm(Gp_TF4_log ~ bc_age18_std + kz021 + FJ003b 
-                      + social_class + tf4imd2000q5 + c645a, data = df_age_18) 
-model_20_tidy <- tidy(model_20)
-
-knitr::kable(model_20_tidy)
-
-residual_plots(df_age_18, model_20, Gp_TF4_log, bc_age18_std)
+# Table
+kable(tidy(result_18[[1]][[2]]))
+# Plots
+residual_plots(df_age_18, result_18[[1]][[2]], Gp_TF4_log, bc_age18_std)
 ```
 
 ## GlycA and NO~2~
 ```{r Age 18 GlycA and no2}
-model_21 <- lm(Gp_TF4_log ~ no2_age18_std + kz021 + FJ003b 
-                      + social_class + tf4imd2000q5 + c645a, data = df_age_18) 
-model_21_tidy <- tidy(model_21)
-
-knitr::kable(model_21_tidy)
-
-residual_plots(df_age_18, model_21, Gp_TF4_log, no2_age18_std)
+# Table
+kable(tidy(result_18[[1]][[3]]))
+# Plots
+residual_plots(df_age_18, result_18[[1]][[3]], Gp_TF4_log, no2_age18_std)
 ```
 
-# Age 24
 ## CRP and PM~2.5~
-```{r Age 24 crp and pm2.5}
-model_22 <- lm(CRP_F24_log ~ pm25_age24_std + kz021 + FKAR0011 
-                      + social_class + f24imd2000q5 + c645a, data = df_age_24) 
-model_22_tidy <- tidy(model_22)
-
-kable(model_22_tidy)
-
-residual_plots(df_age_24, model_22, CRP_F24_log, pm25_age24_std)
+```{r Age 18 crp and pm2.5}
+# Table
+kable(tidy(result_18[[2]][[1]]))
+# Plots
+residual_plots(df_age_18, result_18[[2]][[1]], CRP_TF4_log, pm25_age18_std)
 ```
 
 ## CRP and black carbon
-```{r Age 24 crp and bc}
-model_23 <- lm(CRP_F24_log ~ bc_age24_std + kz021 + FKAR0011 
-                      + social_class + f24imd2000q5 + c645a, data = df_age_24) 
-model_23_tidy <- tidy(model_23)
-
-knitr::kable(model_23_tidy)
-
-residual_plots(df_age_24, model_23, CRP_F24_log, bc_age24_std)
+```{r Age 18 crp and bc}
+# Table
+kable(tidy(result_18[[2]][[2]]))
+# Plots
+residual_plots(df_age_18, result_18[[2]][[2]], CRP_TF4_log, bc_age18_std)
 ```
 
 ## CRP and NO~2~
-```{r Age 24 crp and no2}
-model_24 <- lm(CRP_F24_log ~ no2_age24_std + kz021 + FKAR0011 
-                      + social_class + f24imd2000q5 + c645a, data = df_age_24) 
-model_24_tidy <- tidy(model_24)
-
-knitr::kable(model_24_tidy)
-
-residual_plots(df_age_24, model_24, CRP_F24_log, no2_age24_std)
+```{r Age 18 crp and no2}
+# Table
+kable(tidy(result_18[[2]][[3]]))
+# Plots
+residual_plots(df_age_18, result_18[[2]][[3]], CRP_TF4_log, no2_age18_std)
 ```
 
+# Age 24
 ## GlycA and PM~2.5~
 ```{r Age 24 GlycA and pm2.5}
-model_25 <- lm(Gp_F24_log ~ pm25_age24_std + kz021 + FKAR0011 
-                      + social_class + f24imd2000q5 + c645a, data = df_age_24) 
-model_25_tidy <- tidy(model_25)
-
-kable(model_25_tidy)
-
-residual_plots(df_age_24, model_25, Gp_F24_log, pm25_age24_std)
+# Table
+kable(tidy(result_24[[1]][[1]]))
+# Plots
+residual_plots(df_age_24, result_24[[1]][[1]], Gp_F24_log, pm25_age24_std)
 ```
 
 ## GlycA and black carbon
 ```{r Age 24 GlycA and bc}
-model_26 <- lm(Gp_F24_log ~ bc_age24_std + kz021 + FKAR0011 
-                      + social_class + f24imd2000q5 + c645a, data = df_age_24) 
-model_26_tidy <- tidy(model_26)
-
-knitr::kable(model_26_tidy)
-
-residual_plots(df_age_24, model_26, Gp_F24_log, bc_age24_std)
+# Table
+kable(tidy(result_24[[1]][[2]]))
+# Plots
+residual_plots(df_age_24, result_24[[1]][[2]], Gp_F24_log, bc_age24_std)
 ```
 
 ## GlycA and NO~2~
 ```{r Age 24 GlycA and no2}
-model_27 <- lm(Gp_F24_log ~ no2_age24_std + kz021 + FKAR0011 
-                      + social_class + f24imd2000q5 + c645a, data = df_age_24) 
-model_27_tidy <- tidy(model_27)
+# Table
+kable(tidy(result_24[[1]][[3]]))
+# Plots
+residual_plots(df_age_24, result_24[[1]][[3]], Gp_F24_log, no2_age24_std)
+```
 
-knitr::kable(model_27_tidy)
+## CRP and PM~2.5~
+```{r Age 24 crp and pm2.5}
+# Table
+kable(tidy(result_24[[2]][[1]]))
+# Plots
+residual_plots(df_age_24, result_24[[2]][[1]], CRP_F24_log, pm25_age24_std)
+```
 
-residual_plots(df_age_24, model_27, Gp_F24_log, no2_age24_std)
+## CRP and black carbon
+```{r Age 24 crp and bc}
+# Table
+kable(tidy(result_24[[2]][[2]]))
+# Plots
+residual_plots(df_age_24, result_24[[2]][[2]], CRP_F24_log, bc_age24_std)
+```
+
+## CRP and NO~2~
+```{r Age 24 crp and no2}
+# Table
+kable(tidy(result_24[[2]][[3]]))
+# Plots
+residual_plots(df_age_24, result_24[[2]][[3]], CRP_F24_log, no2_age24_std)
 ```
