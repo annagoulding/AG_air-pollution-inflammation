@@ -28,7 +28,7 @@ df_age_24 <- readRDS(paste0(data, "df_age_24.rds"))
 ```
 
 ```{r functions, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(echo = FALSE, fig.width = 8, fig.height = 4 )
 
 # Running a regression
 run_regression <- function(outcome_vars, exposure_vars, constant_vars, fixed_vars, data) {
@@ -39,6 +39,18 @@ run_regression <- function(outcome_vars, exposure_vars, constant_vars, fixed_var
     })
   })
   return(result)
+}
+
+# Extract main regression results
+extract_regression_results <- function(regression_output, outcome_labels, age) {
+  result_df <- map2_dfr(outcome_labels, regression_output, function(outcome, model_list) {
+    map_dfr(model_list, ~ tidy(.x)[c("term", "estimate", "p.value")][2, ]) %>%
+      mutate(Outcome = outcome)
+  }) %>% 
+    mutate(time_point = age) %>%
+    distinct(.keep_all = TRUE)
+  
+  return(result_df)
 }
 
 # Plotting resuduals
@@ -66,9 +78,8 @@ residual_plots <- function(df, model, outcome, exposure){
     labs(title = "Quantile plot of residuals")
   
   # Plot the plots
-  g <- plot_grid(g1, g2, ncol = 2, labels = "auto")
+  plot_grid(g1, g2, labels = "auto")
   
-  g
 }
 ```
 
@@ -87,6 +98,7 @@ fixed_vars <- c("f7003c_years", "as_factor(f7imd2000q5)")
 data <- df_age_7
 
 result_7 <- run_regression(outcome_vars, exposure_vars, constant_vars, fixed_vars, data)
+result_df_7 <- extract_regression_results(result_7, outcome_vars, 7)
 ```
 
 ```{r age 9 models}
@@ -98,6 +110,7 @@ data <- df_age_9
 
 # Run lm() using nested map() functions
 result_9 <- run_regression(outcome_vars, exposure_vars, constant_vars, fixed_vars, data)
+result_df_9 <- extract_regression_results(result_9, outcome_vars, 9)
 ```
 
 ```{r age 15 models}
@@ -109,6 +122,7 @@ data <- df_age_15
 
 # Run lm() using nested map() functions
 result_15 <- run_regression(outcome_vars, exposure_vars, constant_vars, fixed_vars, data)
+result_df_15 <- extract_regression_results(result_15, outcome_vars, 15)
 ```
 
 ```{r age 18 models}
@@ -120,6 +134,7 @@ data <- df_age_18
 
 # Run lm() using nested map() functions
 result_18 <- run_regression(outcome_vars, exposure_vars, constant_vars, fixed_vars, data)
+result_df_18 <- extract_regression_results(result_18, outcome_vars, 18)
 ```
 
 ```{r age 24 models}
@@ -127,13 +142,29 @@ result_18 <- run_regression(outcome_vars, exposure_vars, constant_vars, fixed_va
 outcome_vars <- c("Gp_F24_log", "CRP_F24_log", "CRP_F24_log") #last one repeated because map function requires vectors of equal length
 exposure_vars <- c("pm25_age24_std", "bc_age24_std", "no2_age24_std")
 fixed_vars <- c("FKAR0011", "as_factor(f24imd2000q5)")
-
-# dataset
 data <- df_age_24
 
 # Run lm() using nested map() functions
 result_24 <- run_regression(outcome_vars, exposure_vars, constant_vars, fixed_vars, data)
+result_df_24 <- extract_regression_results(result_24, outcome_vars, 24)
 ```
+
+# Summary of all models
+```{r combine models}
+all_models <- result_df_7 %>% 
+  bind_rows(result_df_9) %>% 
+  bind_rows(result_df_15) %>% 
+  bind_rows(result_df_18) %>% 
+  bind_rows(result_df_24) %>% 
+  arrange(time_point, Outcome, term) %>% 
+  mutate(estimate_bt = exp(estimate)) %>% 
+  select(time_point, Outcome, term, estimate, estimate_bt, p.value)
+
+saveRDS(all_models, paste0(results, "all_models.rds"))
+
+kable(all_models)
+```
+
 
 # Age 7
 ## GlycA and PM~2.5~
