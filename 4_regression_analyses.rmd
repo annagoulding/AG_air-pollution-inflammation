@@ -44,7 +44,7 @@ run_regression <- function(outcome_vars, exposure_vars, constant_vars, fixed_var
 # Extract main regression results
 extract_regression_results <- function(regression_output, outcome_labels, age) {
   result_df <- map2_dfr(outcome_labels, regression_output, function(outcome, model_list) {
-    map_dfr(model_list, ~ tidy(.x)[c("term", "estimate", "p.value")][2, ]) %>%
+    map_dfr(model_list, ~ tidy(.x, conf.int = TRUE)[c("term", "estimate", "conf.low", "conf.high", "p.value")][2, ]) %>%
       mutate(Outcome = outcome)
   }) %>% 
     mutate(time_point = age) %>%
@@ -157,8 +157,8 @@ all_models <- result_df_7 %>%
   bind_rows(result_df_18) %>% 
   bind_rows(result_df_24) %>% 
   arrange(time_point, Outcome, term) %>% 
-  mutate(estimate_bt = exp(estimate)) %>% 
-  select(time_point, Outcome, term, estimate, estimate_bt, p.value)
+  mutate_at(vars(estimate, conf.low, conf.high), list(bt = ~ exp(.))) %>% 
+  select(time_point, Outcome, term, estimate, ends_with("_bt"), p.value)
 
 saveRDS(all_models, paste0(results, "all_models.rds"))
 
