@@ -21,14 +21,21 @@ create_and_save_forest_plot <- function(df, outcome) {
             expression(NO['2']), 
             expression(PM["2.5"]))
   
+  colours <- c('#00bf7d', '#00b4c5', '#0073e6', '#2546f0', '#5928ed')
+  ages <- c(7, 9, 15, 18, 24)
+  palette <- data.frame(ages, colours)
+  
+  df_filtered$time_point <- factor(df_filtered$time_point, levels = rev(levels(df_filtered$time_point)))  # Reverse order of time_point levels
+  
   plot <- ggplot(df_filtered, aes(x = estimate_bt, xmin = conf.low_bt, xmax = conf.high_bt, y = term, color = time_point)) +
     geom_pointrange(position = position_dodge2(width = 0.5), size = 1.2, fatten = 1.5) +  
-    geom_vline(xintercept = 1, linetype = "dashed", color = "red", size = 1) +
+    geom_vline(xintercept = 1, linetype = "dashed", color = "red", size = 0.5) +
     labs(title = paste("Estimates and 95% CIs for", outcome),
          subtitle = "Reverse Log-Transformed Estimates and Confidence Intervals",
          x = "Estimate (95% CI)",
          y = "Air pollutant exposure",
          color = "Time Point") +
+    scale_color_manual(values = setNames(palette$colours, palette$ages)) +
     theme_minimal() +
     theme(axis.text.y = element_text(size = 12),
           axis.text.x = element_text(size = 12),
@@ -36,9 +43,11 @@ create_and_save_forest_plot <- function(df, outcome) {
           plot.title = element_text(size = 16, face = "bold"),
           plot.subtitle = element_text(size = 14),
           legend.position = "bottom",
-          legend.title = element_blank()) +
+          legend.title = element_blank(),
+          panel.grid.major.y = element_blank()) +  # Remove horizontal gridlines
     scale_y_discrete(labels = lab1) +
-    coord_flip()
+    scale_x_continuous(limits = c(0.7, 1.8), breaks = c(0.75, 1, 1.25, 1.5, 1.75)) +  # Set x-axis scale limits and desired tick marks
+  guides(color = guide_legend(reverse = TRUE))  # Reverse the order of legend items
   
   # Save the plot as an image file
   filename <- paste0(outcome, "_forest_plot.png")
@@ -46,6 +55,7 @@ create_and_save_forest_plot <- function(df, outcome) {
   
   return(filename)
 }
+  
 
 # open datasets ####
 df_age_7 <- readRDS(paste0(data, "df_age_7.rds"))
@@ -67,8 +77,6 @@ all_models_edited <- all_models %>%
   mutate(Outcome = case_when(Outcome == "GP" ~ "GlycA",
                              Outcome== "IL6" ~ "IL-6",
                              T ~ Outcome))
-
-
 
 # List of outcomes
 outcomes <- unique(all_models_edited$Outcome)
