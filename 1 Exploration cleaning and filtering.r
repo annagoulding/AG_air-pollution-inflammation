@@ -35,11 +35,15 @@ df2 <- initial_dataset %>%
   mutate(social_class = if_else(!is.na(c755), c755, c765))
 
 df2 %>% 
-  tabyl(social_class)
+  tabyl(social_class) 
+df2 %>% 
+  tabyl(c755)
 df2 %>% 
   tabyl(social_class, c755)
 df2 %>% 
   tabyl(social_class, c765)
+df2 %>% 
+  tabyl(c755, c765)
 
 # calculate age in years ####
 df2_age <- df2 %>%
