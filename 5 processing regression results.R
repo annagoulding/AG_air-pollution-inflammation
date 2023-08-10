@@ -89,6 +89,14 @@ plot_filenames <- lapply(outcomes, function(outcome) {
 
 
 # Create tables of regression results ####
+combined_estimates <- all_models_edited %>% 
+  mutate(pres_est = paste0(format(round(estimate_bt, digits = 2), nsmall = 2), " (", format(round(conf.low_bt, digits = 2), nsmall = 2), 
+                           " - ", format(round(conf.high_bt, digits = 2), nsmall = 2), ")")) %>% 
+  select(c(time_point, Outcome, term, pres_est, p.value)) %>% 
+  pivot_wider(id_cols = c(time_point, Outcome), names_from = term, values_from = c(pres_est, p.value),
+              names_vary= "slowest")
+
+
 # extract and pivot p-values
 p_value <- all_models %>% 
   select(!estimate) %>% 
