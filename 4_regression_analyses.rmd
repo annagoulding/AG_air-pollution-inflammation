@@ -160,7 +160,7 @@ all_models <- result_df_7 %>%
   mutate_at(vars(estimate, conf.low, conf.high), list(bt = ~ exp(.))) %>% 
   select(time_point, Outcome, term, estimate, ends_with("_bt"), p.value)
 
-saveRDS(all_models, paste0(results, "all_models.rds"))
+saveRDS(all_models, paste0(results, "all_models_standardised.rds"))
 
 kable(all_models)
 ```
